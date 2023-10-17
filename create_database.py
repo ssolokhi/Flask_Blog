@@ -1,4 +1,5 @@
-from flask_blog import database, User, Post
+from flask_blog.models import User, Post
+from flask_blog import database
 
 database.drop_all()
 database.create_all()
