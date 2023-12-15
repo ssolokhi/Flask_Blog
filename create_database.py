@@ -1,7 +1,7 @@
 from flask_blog.models import User, Post
-from flask_blog import database
+from flask_blog import database, app
 
-#database.drop_all()
+database.drop_all()
 database.create_all()
 user_1 = User(username = 'Alice', email = 'alice@demo.com', password = 'example_1')
 database.session.add(user_1)

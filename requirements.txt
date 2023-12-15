@@ -1,6 +1,8 @@
-flask
-flask-wtf
-flask-sqlalchemy
+flask==2.2
+flask-wtf==1.2.1
+flask-sqlalchemy==3.0.2
 email-validator
-bcrypt
-flask-login
+bcrypt==4.1.2
+flask-login==0.6.3
+Werkzeu==2.2.2
+Pillow==10.1.0

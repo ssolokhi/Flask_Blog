@@ -1,8 +1,11 @@
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
-from flask_blog.forms import RegistrationForm, LoginForm
+from flask_blog.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from flask_blog.models import User, Post
 from flask_blog import app, database, bcrypt
+from secrets import token_hex
+from os import path
+from PIL import Image
 
 posts = [
     {
@@ -48,7 +51,7 @@ def login():
         return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = user.query.filter_by(email = form.username.data).first()
+        user = User.query.filter_by(username = form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember = form.remember.data)
             next_page = request.args.get('next')
@@ -62,8 +65,32 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
-@app.route("/account")
+def save_image(form_image):
+    random_hex = token_hex(8)
+    _, file_extension = path.splitext(form_image.filename)
+    image_filename = ''.join([random_hex, file_extension])
+    image_path = path.join(app.root_path, 'static', 'profile_images', image_filename)
+    output_size_pixels = (125, 125)
+    i = Image.open(form_image)
+    i.thumbnail(output_size_pixels) # resize image to avoid costly rendering
+    i.save(image_path)
+    return image_filename
+
+@app.route("/account", methods = ['GET', 'POST'])
 @login_required
 def account():
-    logout_user()
-    return render_template('account.html', title = 'Account')
+    form = UpdateAccountForm()
+    if form.validate_on_submit():
+        if form.image.data:
+            image_file = save_image(form.image.data)
+            current_user.image_file = image_file
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        database.session.commit()
+        flash('Account information updated successfully!', 'success')
+        return redirect(url_for('account')) # to avoid post-get-redirect pattern with next return
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+    image_file = url_for('static', filename = f'profile_images/{current_user.image_file}')
+    return render_template('account.html', title = 'Account', image_file = image_file, form = form)

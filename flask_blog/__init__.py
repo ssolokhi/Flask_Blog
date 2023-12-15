@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from os import environ
 
 app = Flask(__name__)
+app.app_context().push()
 app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 
