@@ -1,5 +1,6 @@
 __pycache__/
 instance/
+flask_blog/static/profile_images/
 *.db
 *.jpg
 *.png
